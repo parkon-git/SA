@@ -132,8 +132,7 @@
             <div class="meta-item"><span class="label">기준일 :</span><span id="hdr-date"></span></div>
         </div>
         <div>
-            <div class="disclaimer">※ LLM을 활용하여 1차 가공한 내용을 검토 및 보완했습니다.</div>
-            <div class="disclaimer">※ 본 데이터는 예선 설문 참가자 기반으로 작성되었으며 전체 모수와 차이가 있을 수 있습니다.</div>
+            <div class="disclaimer">※ LLM을 활용하여 1차 가공한 내용을 검토 및 보완했습니다.</div>            
         </div>
     </header>
 
@@ -219,10 +218,10 @@
 // ╚══════════════════════════════════════════════════════════╝
 const SHEET_ID = '1p1L9Ef5vlXZeuIEeL8rst5NtJbQBG8zJrs2_1scXTIg';
 const SHEET_URLS = {
-    meta:      csvUrl(2099289213),
-    payment:   csvUrl(690442147),
-    dist:      csvUrl(96400806),
-    playtime:  csvUrl(687177386),
+    meta:      csvUrl(SHEET_ID, 2099289213),
+    payment:   csvUrl(SHEET_ID, 690442147),
+    dist:      csvUrl(SHEET_ID, 96400806),
+    playtime:  csvUrl(SHEET_ID, 687177386),
 };
 
 function csvUrl(id, gid) {
