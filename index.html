@@ -132,7 +132,7 @@
             <div class="meta-item"><span class="label">기준일 :</span><span id="hdr-date"></span></div>
         </div>
         <div>
-            <div class="disclaimer">※ LLM을 활용하여 1차 가공한 내용을 검토 및 보완했습니다.</div>            
+            <div class="disclaimer">※ LLM을 활용하여 1차 가공한 내용을 검토 및 보완했습니다.</div>
         </div>
     </header>
 
@@ -216,12 +216,12 @@
 // ╔══════════════════════════════════════════════════════════╗
 // ║  ★ 여기만 수정하세요 ★                                    ║
 // ╚══════════════════════════════════════════════════════════╝
-const SHEET_ID = '1p1L9Ef5vlXZeuIEeL8rst5NtJbQBG8zJrs2_1scXTIg';
+const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID_HERE';
 const SHEET_URLS = {
-    meta:      csvUrl(SHEET_ID, 2099289213),
-    payment:   csvUrl(SHEET_ID, 690442147),
-    dist:      csvUrl(SHEET_ID, 96400806),
-    playtime:  csvUrl(SHEET_ID, 687177386),
+    meta:      csvUrl(SHEET_ID, 0),
+    payment:   csvUrl(SHEET_ID, 1),
+    dist:      csvUrl(SHEET_ID, 2),
+    playtime:  csvUrl(SHEET_ID, 3),
 };
 
 function csvUrl(id, gid) {
@@ -289,6 +289,15 @@ const distColors = {
     '100만+': '#F94242',
 };
 
+// ── 배율 텍스트 생성 ──
+function fmtMultiple(val, allVal) {
+    if (!allVal || allVal === 0) return '';
+    const ratio = val / allVal;
+    const cls   = ratio >= 1 ? 'up' : 'down';
+    const sym   = ratio >= 1 ? '▲' : '▼';
+    return `전체 유저 대비 <span class="diff ${cls}">${sym}${ratio.toFixed(1)}배</span>`;
+}
+
 // ── 렌더링 ──
 function renderPaymentCards(paymentData, meta) {
     const d = paymentData[0] || {};
@@ -297,19 +306,21 @@ function renderPaymentCards(paymentData, meta) {
     const arppu   = parseFloat(d.ARPPU || 0);
     const topPct  = parseFloat(d.TOP_SPENDER_PCT || 0);
     const topAmt  = parseFloat(d.TOP_SPENDER_AMT || 0);
+    const purAll  = parseFloat(d.PUR_ALL || 0);
+    const arppuAll= parseFloat(d.ARPPU_ALL || 0);
 
-    document.getElementById('s-pur').textContent     = pur.toFixed(1) + '%';
-    document.getElementById('s-arppu').textContent   = fmtWon(arppu);
+    document.getElementById('s-pur').textContent   = pur.toFixed(1) + '%';
+    document.getElementById('s-arppu').textContent = fmtWon(arppu);
     document.getElementById('s-playtime').textContent = '-'; // playtime에서 채움
 
-    document.getElementById('s-pur-desc').textContent     = d.PUR_DESC || '';
-    document.getElementById('s-arppu-desc').textContent   = d.ARPPU_DESC || '';
+    document.getElementById('s-pur-desc').innerHTML   = fmtMultiple(pur, purAll);
+    document.getElementById('s-arppu-desc').innerHTML = fmtMultiple(arppu, arppuAll);
 
-    document.getElementById('t-pur').textContent           = pur.toFixed(1) + '%';
-    document.getElementById('t-arppu').textContent         = fmtWon(arppu);
-    document.getElementById('t-topspender').textContent    = topPct.toFixed(1) + '%';
-    document.getElementById('t-pur-desc').textContent      = d.PUR_DESC || '';
-    document.getElementById('t-arppu-desc').textContent    = d.ARPPU_DESC || '';
+    document.getElementById('t-pur').textContent        = pur.toFixed(1) + '%';
+    document.getElementById('t-arppu').textContent      = fmtWon(arppu);
+    document.getElementById('t-topspender').textContent = topPct.toFixed(1) + '%';
+    document.getElementById('t-pur-desc').innerHTML     = fmtMultiple(pur, purAll);
+    document.getElementById('t-arppu-desc').innerHTML   = fmtMultiple(arppu, arppuAll);
     document.getElementById('t-topspender-desc').textContent = `상위 ${topPct.toFixed(1)}%가 전체 결제액의 ${topAmt.toFixed(0)}% 차지`;
 }
 
@@ -337,10 +348,11 @@ function renderDist(distData) {
 }
 
 function renderPlaytimeTable(playtimeData) {
-    // 요약 카드에 전체 평균 접속 시간도 채우기
     const avgAll = playtimeData.reduce((s, d) => s + parseFloat(d.AVG_MIN || 0), 0) / (playtimeData.length || 1);
+    const avgAllGlobal = parseFloat(playtimeData[0]?.AVG_MIN_ALL || 0);
+
     document.getElementById('s-playtime').textContent = fmtMin(avgAll);
-    document.getElementById('s-playtime-desc').textContent = '예선 기간 전체 평균';
+    document.getElementById('s-playtime-desc').innerHTML = fmtMultiple(avgAll, avgAllGlobal);
 
     const tbody = document.getElementById('table-body-playtime');
     playtimeData.forEach(d => {
