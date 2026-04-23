@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026 서든어택 챔피언십 시즌1 예선 설문 참가자 분석</title>
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-main: #121418;
@@ -14,102 +13,72 @@
             --text-main: #e5e7eb;
             --text-muted: #9ca3af;
             --point-red-key: #F94242;
-            --point-red-light: #ff7070;
             --point-blue: #38bdf8;
             --point-yellow: #f59e0b;
         }
         * { box-sizing: border-box; }
-        body {
-            margin: 0; padding: 0;
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            font-family: 'Pretendard', -apple-system, sans-serif;
-            line-height: 1.6;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        body { margin:0; padding:0; background-color:var(--bg-main); color:var(--text-main); font-family:'Pretendard',-apple-system,sans-serif; line-height:1.6; }
+        .container { max-width:1200px; margin:0 auto; padding:40px 20px; }
 
-        /* 로딩 */
-        #loading-overlay {
-            position: fixed; inset: 0;
-            background: var(--bg-main);
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            z-index: 9999; gap: 20px;
-        }
-        #loading-overlay.hidden { display: none; }
-        .spinner { width: 48px; height: 48px; border: 4px solid var(--border-color); border-top-color: var(--point-red-key); border-radius: 50%; animation: spin 0.9s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        #loading-text { color: var(--text-muted); font-size: 0.95rem; }
+        #loading-overlay { position:fixed; inset:0; background:var(--bg-main); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; gap:20px; }
+        #loading-overlay.hidden { display:none; }
+        .spinner { width:48px; height:48px; border:4px solid var(--border-color); border-top-color:var(--point-red-key); border-radius:50%; animation:spin 0.9s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        #loading-text { color:var(--text-muted); font-size:0.95rem; }
 
-        /* 에러 */
-        #error-banner { display: none; background: rgba(239,68,68,0.1); border: 1px solid var(--point-red-key); border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; color: #fca5a5; font-size: 0.9rem; }
-        #error-banner.show { display: block; }
+        #error-banner { display:none; background:rgba(239,68,68,0.1); border:1px solid var(--point-red-key); border-radius:8px; padding:16px 20px; margin-bottom:24px; color:#fca5a5; font-size:0.9rem; }
+        #error-banner.show { display:block; }
 
-        /* 헤더 */
-        .report-header { text-align: center; margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px solid var(--border-color); }
-        .eyebrow { color: var(--point-red-key); font-weight: 700; font-size: 1rem; margin-bottom: 12px; letter-spacing: 0.5px; }
-        h1 { font-size: 2.2rem; font-weight: 800; margin: 0 0 24px; color: #fff; }
-        .metadata { display: flex; justify-content: center; gap: 24px; margin-bottom: 24px; font-size: 0.95rem; color: #d1d5db; flex-wrap: wrap; }
-        .meta-item span.label { color: var(--text-muted); margin-right: 6px; }
-        .disclaimer { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
+        .report-header { text-align:center; margin-bottom:40px; padding-bottom:30px; border-bottom:1px solid var(--border-color); }
+        .eyebrow { color:var(--point-red-key); font-weight:700; font-size:1rem; margin-bottom:12px; letter-spacing:0.5px; }
+        h1 { font-size:2.2rem; font-weight:800; margin:0 0 24px; color:#fff; }
+        .metadata { display:flex; justify-content:center; gap:24px; margin-bottom:24px; font-size:0.95rem; color:#d1d5db; flex-wrap:wrap; }
+        .meta-item span.label { color:var(--text-muted); margin-right:6px; }
+        .disclaimer { font-size:0.85rem; color:var(--text-muted); margin-bottom:6px; }
 
-        h2 { font-size: 1.3rem; margin-top: 40px; margin-bottom: 20px; color: var(--point-red-key); }
-        h3 { font-size: 1.1rem; margin-top: 30px; margin-bottom: 16px; border-top: 1px solid var(--border-color); padding-top: 30px; color: #fff; }
+        h2 { font-size:1.3rem; margin-top:40px; margin-bottom:20px; color:var(--point-red-key); }
 
-        /* 카드 */
-        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 20px; }
-        .grid-3 { grid-template-columns: repeat(3, 1fr); }
-        .card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 24px; text-align: center; }
-        .card .title { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; }
-        .card .value { font-size: 2.2rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
-        .card .value.sm { font-size: 1.8rem; }
-        .card .desc { font-size: 0.8rem; color: var(--text-muted); }
-        .diff { font-size: 1.1em; margin-left: 8px; font-weight: 700; }
-        .diff.up { color: var(--point-red-key); }
-        .diff.down { color: var(--point-blue); }
-        .desc-muted { color: var(--text-muted) !important; font-size: 0.85em !important; font-weight: 400 !important; }
+        .grid-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin-bottom:20px; }
+        .grid-3 { grid-template-columns:repeat(3,1fr); }
+        .card { background-color:var(--bg-card); border:1px solid var(--border-color); border-radius:10px; padding:24px; text-align:center; }
+        .card .title { font-size:0.9rem; color:var(--text-muted); margin-bottom:8px; }
+        .card .value { font-size:2.2rem; font-weight:700; color:#fff; margin-bottom:8px; }
+        .card .value.sm { font-size:1.8rem; }
+        .card .desc { font-size:0.8rem; color:var(--text-muted); }
+        .diff.up { color:var(--point-red-key); font-weight:700; }
+        .diff.down { color:var(--point-blue); font-weight:700; }
+        .desc-muted { color:var(--text-muted) !important; font-size:0.85em !important; font-weight:400 !important; }
 
-        /* 요약박스 */
-        .summary-box { background-color: var(--bg-card); border-left: 4px solid var(--point-red-key); padding: 24px; border-radius: 4px; margin-top: 20px; }
-        .summary-box p { margin: 8px 0; font-size: 0.95rem; }
-        .summary-box hr { border: 0; border-top: 1px solid var(--border-color); margin: 20px 0; }
-        .summary-box ul { margin: 0 0 8px; padding-left: 24px; }
-        .summary-box li { margin-bottom: 6px; font-size: 0.95rem; }
+        .summary-box { background-color:var(--bg-card); border-left:4px solid var(--point-red-key); padding:24px; border-radius:4px; margin-top:20px; }
+        .summary-box p { margin:8px 0; font-size:0.95rem; }
+        .summary-box hr { border:0; border-top:1px solid var(--border-color); margin:20px 0; }
+        .summary-box ul { margin:0 0 8px; padding-left:24px; }
+        .summary-box li { margin-bottom:6px; font-size:0.95rem; }
 
-        /* 인사이트 박스 */
-        .chart-summary { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 20px; margin: 10px 0 20px; font-size: 0.95rem; text-align: left; min-height: 46px; }
-        .llm-loading { color: var(--text-muted); font-style: italic; }
-        .llm-loading::after { content: '.'; animation: dots 1.2s steps(3,end) infinite; }
-        @keyframes dots { 0%,100% { content: '.'; } 33% { content: '..'; } 66% { content: '...'; } }
+        .chart-summary { background-color:var(--bg-card); border:1px solid var(--border-color); border-radius:8px; padding:14px 20px; margin:10px 0 20px; font-size:0.95rem; text-align:left; min-height:46px; }
+        .llm-loading { color:var(--text-muted); font-style:italic; }
+        .llm-loading::after { content:'.'; animation:dots 1.2s steps(3,end) infinite; }
+        @keyframes dots { 0%,100%{content:'.';} 33%{content:'..';} 66%{content:'...';} }
 
-        /* 결제 구간 분포 바 차트 */
-        .payment-dist { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; padding: 28px; margin-top: 20px; }
-        .payment-dist .dist-title { font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 20px; }
-        .dist-row { margin-bottom: 16px; }
-        .dist-label-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem; }
-        .dist-label { color: var(--text-main); }
-        .dist-value { font-weight: 700; }
-        .dist-bar-bg { background-color: rgba(255,255,255,0.07); border-radius: 4px; height: 10px; overflow: hidden; }
-        .dist-bar { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+        /* 좌우 2열 분포 레이아웃 */
+        .dist-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px; }
+        .dist-panel { background-color:var(--bg-card); border:1px solid var(--border-color); border-radius:10px; padding:24px; }
+        .dist-panel .dist-panel-title { font-size:0.95rem; font-weight:600; color:#fff; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border-color); }
+        .dist-panel .dist-panel-title.ref { color:var(--text-muted); }
+        .dist-row { margin-bottom:14px; }
+        .dist-label-row { display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.85rem; }
+        .dist-label { color:var(--text-main); }
+        .dist-value { font-weight:700; }
+        .dist-bar-bg { background-color:rgba(255,255,255,0.07); border-radius:4px; height:9px; overflow:hidden; }
+        .dist-bar { height:100%; border-radius:4px; transition:width 0.8s ease; }
 
-        /* 테이블 */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: var(--bg-card); border-radius: 10px; overflow: hidden; }
-        th, td { padding: 14px 16px; text-align: center; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; white-space: nowrap; }
-        th { background-color: rgba(0,0,0,0.2); color: var(--text-muted); font-weight: 500; }
-        .group-header-row td { background-color: rgba(255,255,255,0.05); font-weight: 600; color: var(--text-main); text-align: left !important; }
-        .text-left { text-align: left !important; }
-        .highlight-red { color: var(--point-red-key); font-weight: 700; }
+        .info-list { margin:10px 0 0; padding-left:20px; font-size:0.95rem; line-height:1.7; }
+        .info-list li { margin-bottom:8px; }
 
-        /* 트렌드 */
-        .trend-item { background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; margin-bottom: 12px; }
-        .trend-item p { margin: 0; font-size: 0.95rem; line-height: 1.7; }
-
-        .info-list { margin: 10px 0 0; padding-left: 20px; font-size: 0.95rem; line-height: 1.7; }
-        .info-list li { margin-bottom: 8px; }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 1.5rem; }
-            .grid-3 { grid-template-columns: 1fr; }
+        @media (max-width:768px) {
+            h1 { font-size:1.5rem; }
+            .grid-3 { grid-template-columns:1fr; }
+            .dist-grid { grid-template-columns:1fr; }
         }
     </style>
 </head>
@@ -123,7 +92,6 @@
 <div class="container">
     <div id="error-banner"></div>
 
-    <!-- 헤더 -->
     <header class="report-header">
         <div class="eyebrow" id="hdr-circuit">로딩 중...</div>
         <h1 id="hdr-title">분석 리포트</h1>
@@ -133,10 +101,11 @@
         </div>
         <div>
             <div class="disclaimer">※ LLM을 활용하여 1차 가공한 내용을 검토 및 보완했습니다.</div>
+            <div class="disclaimer">※ 본 데이터는 예선 설문 참가자 기반으로 작성되었으며 전체 모수와 차이가 있을 수 있습니다.</div>
         </div>
     </header>
 
-    <!-- ══════════════ 1. 요약 ══════════════ -->
+    <!-- 1. 요약 -->
     <h2>1. 요약</h2>
     <div class="grid-cards grid-3">
         <div class="card">
@@ -150,7 +119,7 @@
             <div class="desc" id="s-arppu-desc"></div>
         </div>
         <div class="card">
-            <div class="title">평균 접속 시간</div>
+            <div class="title">일일 플레이시간(평균)</div>
             <div class="value" id="s-playtime">-</div>
             <div class="desc" id="s-playtime-desc"></div>
         </div>
@@ -162,10 +131,8 @@
         <p>📌 <strong style="color:var(--point-red-key);">핵심 요약 :</strong> <span id="summary-core" class="llm-loading">요약 생성 중</span></p>
     </div>
 
-    <!-- ══════════════ 2. 결제 관련 분석 ══════════════ -->
+    <!-- 2. 결제 관련 분석 -->
     <h2>2. 결제 관련 분석</h2>
-
-    <!-- 카드 3개 -->
     <div class="grid-cards grid-3">
         <div class="card" style="padding:16px;">
             <div class="title">PUR</div>
@@ -186,42 +153,47 @@
 
     <div class="chart-summary text-left" id="payment-insight"><span class="llm-loading">인사이트 생성 중</span></div>
 
-    <!-- 결제 구간 분포 -->
-    <div class="payment-dist">
-        <div class="dist-title">결제 구간 분포</div>
-        <div id="dist-rows"></div>
+    <!-- 결제 구간 분포 좌우 2열 -->
+    <div class="dist-grid">
+        <div class="dist-panel">
+            <div class="dist-panel-title">결제 구간 분포 — 예선 설문 참가자</div>
+            <div id="dist-rows-survey"></div>
+        </div>
+        <div class="dist-panel">
+            <div class="dist-panel-title ref">(참고) 결제 구간 분포 — 일반 유저</div>
+            <div id="dist-rows-all"></div>
+        </div>
     </div>
 
-    <!-- ══════════════ 3. 접속 시간 ══════════════ -->
-    <h2>3. 접속 시간</h2>
+    <!-- 3. 일일 플레이시간 -->
+    <h2>3. 일일 플레이시간(평균)</h2>
     <div class="chart-summary text-left" id="playtime-insight"><span class="llm-loading">인사이트 생성 중</span></div>
-    <table>
-        <thead>
-            <tr>
-                <th>날짜</th>
-                <th>평균 접속 시간</th>
-                <th>최장 접속 시간</th>
-                <th>참가자 수</th>
-            </tr>
-        </thead>
-        <tbody id="table-body-playtime"></tbody>
-    </table>
 
-
-
+    <!-- 일일 플레이시간 분포 좌우 2열 -->
+    <div class="dist-grid">
+        <div class="dist-panel">
+            <div class="dist-panel-title">일일 플레이시간 분포 — 예선 설문 참가자</div>
+            <div id="playtime-rows-survey"></div>
+        </div>
+        <div class="dist-panel">
+            <div class="dist-panel-title ref">(참고) 일일 플레이시간 분포 — 전체 유저</div>
+            <div id="playtime-rows-all"></div>
+        </div>
+    </div>
 
 </div>
 
 <script>
-// ╔══════════════════════════════════════════════════════════╗
-// ║  ★ 여기만 수정하세요 ★                                    ║
-// ╚══════════════════════════════════════════════════════════╝
-const SHEET_ID = 'YOUR_GOOGLE_SHEET_ID_HERE';
+// ╔══════════════════════════════════════════════════════╗
+// ║  ★ 여기만 수정하세요 ★                                ║
+// ╚══════════════════════════════════════════════════════╝
+const SHEET_ID = '1p1L9Ef5vlXZeuIEeL8rst5NtJbQBG8zJrs2_1scXTIg';
 const SHEET_URLS = {
-    meta:      csvUrl(SHEET_ID, 0),
-    payment:   csvUrl(SHEET_ID, 1),
-    dist:      csvUrl(SHEET_ID, 2),
-    playtime:  csvUrl(SHEET_ID, 3),
+    meta:          csvUrl(SHEET_ID, 2099289213),
+    payment:       csvUrl(SHEET_ID, 690442147),
+    dist:          csvUrl(SHEET_ID, 96400806),
+    dist_all:      csvUrl(SHEET_ID, 691037348),
+    playtime_dist: csvUrl(SHEET_ID, 1636957650),
 };
 
 function csvUrl(id, gid) {
@@ -230,14 +202,15 @@ function csvUrl(id, gid) {
 
 // ── 유틸 ──
 const fmt    = n => new Intl.NumberFormat('ko-KR').format(Math.round(n));
-const fmtWon = n => Math.round(n) >= 10000
-    ? Math.floor(n / 10000) + '만원'
-    : fmt(n) + '원';
-const fmtMin = n => {
-    const h = Math.floor(n / 60);
-    const m = Math.round(n % 60);
-    return h > 0 ? `${h}시간 ${m}분` : `${m}분`;
-};
+const fmtWon = n => Math.round(n) >= 10000 ? Math.floor(n/10000)+'만원' : fmt(n)+'원';
+const fmtMin = n => Math.round(n) + '분';  // 분 단위로만 표기
+
+function fmtMultiple(val, allVal) {
+    if (!allVal || allVal === 0) return '';
+    const ratio = val / allVal;
+    const cls = ratio >= 1 ? 'up' : 'down';
+    return `전체 유저 대비 <span class="diff ${cls}">${ratio.toFixed(1)}배</span>`;
+}
 
 // ── CSV 파싱 ──
 async function fetchCSV(url) {
@@ -252,13 +225,13 @@ function csvToObjects(rows) {
     const [headers, ...data] = rows;
     return data.map(row => {
         const obj = {};
-        headers.forEach((h, i) => obj[h] = row[i] ?? '');
+        headers.forEach((h,i) => obj[h] = row[i] ?? '');
         return obj;
     });
 }
 function csvToMeta(rows) {
     const obj = {};
-    rows.forEach(([k, v]) => { if (k) obj[k] = v; });
+    rows.forEach(([k,v]) => { if(k) obj[k]=v; });
     return obj;
 }
 
@@ -279,61 +252,36 @@ async function generateText(prompt) {
     }
 }
 
-// ── 결제 구간 바 색상 ──
+// ── 결제 구간 색상 ──
 const distColors = {
-    '무과금':  '#9ca3af',
-    '~5만':   '#38bdf8',
-    '~20만':  '#f59e0b',
-    '~50만':  '#fb923c',
-    '~100만': '#f87171',
-    '100만+': '#F94242',
+    '무과금': '#9ca3af',
+    '~5만':  '#38bdf8',
+    '~20만': '#f59e0b',
+    '~50만': '#fb923c',
+    '~100만':'#f87171',
+    '100만+':'#F94242',
 };
 
-// ── 배율 텍스트 생성 ──
-function fmtMultiple(val, allVal) {
-    if (!allVal || allVal === 0) return '';
-    const ratio = val / allVal;
-    const cls   = ratio >= 1 ? 'up' : 'down';
-    const sym   = ratio >= 1 ? '▲' : '▼';
-    return `전체 유저 대비 <span class="diff ${cls}">${sym}${ratio.toFixed(1)}배</span>`;
-}
+// ── 플레이시간 구간 색상 ──
+const playtimeColors = {
+    '미접속':  '#9ca3af',
+    '~60분':  '#38bdf8',
+    '~120분': '#f59e0b',
+    '~180분': '#fb923c',
+    '~240분': '#f87171',
+    '240분+': '#F94242',
+};
 
-// ── 렌더링 ──
-function renderPaymentCards(paymentData, meta) {
-    const d = paymentData[0] || {};
-
-    const pur     = parseFloat(d.PUR || 0);
-    const arppu   = parseFloat(d.ARPPU || 0);
-    const topPct  = parseFloat(d.TOP_SPENDER_PCT || 0);
-    const topAmt  = parseFloat(d.TOP_SPENDER_AMT || 0);
-    const purAll  = parseFloat(d.PUR_ALL || 0);
-    const arppuAll= parseFloat(d.ARPPU_ALL || 0);
-
-    document.getElementById('s-pur').textContent   = pur.toFixed(1) + '%';
-    document.getElementById('s-arppu').textContent = fmtWon(arppu);
-    document.getElementById('s-playtime').textContent = '-'; // playtime에서 채움
-
-    document.getElementById('s-pur-desc').innerHTML   = fmtMultiple(pur, purAll);
-    document.getElementById('s-arppu-desc').innerHTML = fmtMultiple(arppu, arppuAll);
-
-    document.getElementById('t-pur').textContent        = pur.toFixed(1) + '%';
-    document.getElementById('t-arppu').textContent      = fmtWon(arppu);
-    document.getElementById('t-topspender').textContent = topPct.toFixed(1) + '%';
-    document.getElementById('t-pur-desc').innerHTML     = fmtMultiple(pur, purAll);
-    document.getElementById('t-arppu-desc').innerHTML   = fmtMultiple(arppu, arppuAll);
-    document.getElementById('t-topspender-desc').textContent = `상위 ${topPct.toFixed(1)}%가 전체 결제액의 ${topAmt.toFixed(0)}% 차지`;
-}
-
-function renderDist(distData) {
-    const container = document.getElementById('dist-rows');
-    const total = distData.reduce((s, d) => s + parseFloat(d.COUNT || 0), 0);
-
-    distData.forEach(d => {
-        const label = d.TIER;
-        const count = parseFloat(d.COUNT || 0);
-        const pct   = total > 0 ? (count / total * 100) : 0;
-        const color = distColors[label] || '#9ca3af';
-
+// ── 분포 바 공통 렌더 함수 ──
+function renderDistBars(containerId, data, tierKey, countKey, colorMap) {
+    const container = document.getElementById(containerId);
+    const total = data.reduce((s,d) => s + parseFloat(d[countKey]||0), 0);
+    container.innerHTML = '';
+    data.forEach(d => {
+        const label = d[tierKey];
+        const count = parseFloat(d[countKey]||0);
+        const pct   = total > 0 ? (count/total*100) : 0;
+        const color = colorMap[label] || '#9ca3af';
         container.innerHTML += `
         <div class="dist-row">
             <div class="dist-label-row">
@@ -341,72 +289,85 @@ function renderDist(distData) {
                 <span class="dist-value" style="color:${color}">${fmt(count)}명 (${pct.toFixed(1)}%)</span>
             </div>
             <div class="dist-bar-bg">
-                <div class="dist-bar" style="width:${pct}%; background:${color};"></div>
+                <div class="dist-bar" style="width:${pct}%;background:${color};"></div>
             </div>
         </div>`;
     });
 }
 
-function renderPlaytimeTable(playtimeData) {
-    const avgAll = playtimeData.reduce((s, d) => s + parseFloat(d.AVG_MIN || 0), 0) / (playtimeData.length || 1);
-    const avgAllGlobal = parseFloat(playtimeData[0]?.AVG_MIN_ALL || 0);
+// ── 카드 렌더링 ──
+function renderPaymentCards(paymentData) {
+    const d = paymentData[0] || {};
+    const pur      = parseFloat(d.PUR||0);
+    const arppu    = parseFloat(d.ARPPU||0);
+    const topPct   = parseFloat(d.TOP_SPENDER_PCT||0);
+    const topAmt   = parseFloat(d.TOP_SPENDER_AMT||0);
+    const purAll   = parseFloat(d.PUR_ALL||0);
+    const arppuAll = parseFloat(d.ARPPU_ALL||0);
 
-    document.getElementById('s-playtime').textContent = fmtMin(avgAll);
-    document.getElementById('s-playtime-desc').innerHTML = fmtMultiple(avgAll, avgAllGlobal);
+    document.getElementById('s-pur').textContent   = pur.toFixed(1)+'%';
+    document.getElementById('s-arppu').textContent = fmtWon(arppu);
+    document.getElementById('s-pur-desc').innerHTML   = fmtMultiple(pur, purAll);
+    document.getElementById('s-arppu-desc').innerHTML = fmtMultiple(arppu, arppuAll);
 
-    const tbody = document.getElementById('table-body-playtime');
-    playtimeData.forEach(d => {
-        tbody.innerHTML += `<tr>
-            <td>${d.날짜}</td>
-            <td style="font-weight:700;">${fmtMin(parseFloat(d.AVG_MIN || 0))}</td>
-            <td>${fmtMin(parseFloat(d.MAX_MIN || 0))}</td>
-            <td>${fmt(parseFloat(d.COUNT || 0))}명</td>
-        </tr>`;
-    });
+    document.getElementById('t-pur').textContent      = pur.toFixed(1)+'%';
+    document.getElementById('t-arppu').textContent    = fmtWon(arppu);
+    document.getElementById('t-topspender').textContent = topPct.toFixed(1)+'%';
+    document.getElementById('t-pur-desc').innerHTML   = fmtMultiple(pur, purAll);
+    document.getElementById('t-arppu-desc').innerHTML = fmtMultiple(arppu, arppuAll);
+    document.getElementById('t-topspender-desc').textContent = `상위 ${topPct.toFixed(1)}%가 전체 결제액의 ${topAmt.toFixed(0)}% 차지`;
 }
 
-// ── LLM 프롬프트 ──
-async function fillLLMTexts(paymentData, distData, playtimeData, meta) {
+function renderPlaytimeSummary(playtimeDistData) {
+    // 예선 참가자 전체 평균 (AVG_MIN 컬럼 사용)
+    const surveyRows = playtimeDistData.filter(d => d.GROUP === 'survey');
+    const allRows    = playtimeDistData.filter(d => d.GROUP === 'all');
+
+    const avgSurvey = parseFloat(playtimeDistData[0]?.AVG_MIN_SURVEY || 0);
+    const avgAll    = parseFloat(playtimeDistData[0]?.AVG_MIN_ALL    || 0);
+
+    document.getElementById('s-playtime').textContent  = fmtMin(avgSurvey);
+    document.getElementById('s-playtime-desc').innerHTML = fmtMultiple(avgSurvey, avgAll);
+
+    renderDistBars('playtime-rows-survey', surveyRows, 'TIER', 'COUNT', playtimeColors);
+    renderDistBars('playtime-rows-all',    allRows,    'TIER', 'COUNT', playtimeColors);
+}
+
+// ── LLM ──
+async function fillLLMTexts(paymentData, distData, playtimeDistData) {
     const d = paymentData[0] || {};
-    const pur   = parseFloat(d.PUR || 0).toFixed(1);
-    const arppu = parseFloat(d.ARPPU || 0);
-    const distSummary = distData.map(r => `${r.TIER}: ${r.COUNT}명`).join(', ');
-    const playSummary = playtimeData.map(r => `${r.날짜}: 평균 ${fmtMin(parseFloat(r.AVG_MIN||0))}`).join(', ');
+    const pur   = parseFloat(d.PUR||0).toFixed(1);
+    const arppu = parseFloat(d.ARPPU||0);
+    const distSummary = distData.map(r=>`${r.TIER}: ${r.COUNT}명`).join(', ');
+    const ptSurvey = playtimeDistData.filter(r=>r.GROUP==='survey').map(r=>`${r.TIER}: ${r.COUNT}명`).join(', ');
 
     const [summaryRaw, paymentInsight, playtimeInsight] = await Promise.all([
         generateText(
-            `다음은 서든어택 챔피언십 예선 설문 참가자 인게임 분석 데이터입니다.\n` +
-            `PUR(결제 유저 비율): ${pur}%\n` +
-            `ARPPU(결제 유저 평균 결제액): ${fmtWon(arppu)}\n` +
-            `결제 구간 분포: ${distSummary}\n` +
-            `접속 시간 현황: ${playSummary}\n\n` +
-            `위 데이터를 바탕으로 핵심 인사이트 3가지를 각각 한 문장으로 작성하세요.\n` +
-            `각 항목은 \\n으로 구분하고, 그 뒤에 "---CORE---" 구분자를 넣고 한 문장 핵심 요약을 작성하세요.\n` +
+            `서든어택 챔피언십 예선 설문 참가자 인게임 분석 데이터:\n`+
+            `PUR: ${pur}%, ARPPU: ${fmtWon(arppu)}\n`+
+            `결제 구간: ${distSummary}\n`+
+            `일일 플레이시간 분포: ${ptSurvey}\n\n`+
+            `핵심 인사이트 3가지를 각각 한 문장으로 작성하세요.\n`+
+            `각 항목은 \\n으로 구분하고, "---CORE---" 구분자 후 한 문장 핵심 요약을 작성하세요.\n`+
             `형식: [인사이트1]\\n[인사이트2]\\n[인사이트3]\\n---CORE---\\n[핵심 요약]`
         ),
         generateText(
-            `서든어택 예선 참가자 결제 분석 데이터:\n` +
-            `PUR: ${pur}%, ARPPU: ${fmtWon(arppu)}\n` +
-            `결제 구간: ${distSummary}\n\n` +
-            `이 결제 데이터의 주요 특징을 한 문장(50자 이내)으로 요약하세요.`
+            `서든어택 예선 참가자 결제 분석:\nPUR: ${pur}%, ARPPU: ${fmtWon(arppu)}\n결제 구간: ${distSummary}\n\n`+
+            `주요 특징을 한 문장(50자 이내)으로 요약하세요.`
         ),
         generateText(
-            `서든어택 예선 참가자 접속 시간 데이터:\n${playSummary}\n\n` +
-            `접속 시간 데이터의 주요 특징을 한 문장(50자 이내)으로 요약하세요.`
+            `서든어택 예선 참가자 일일 플레이시간 분포: ${ptSurvey}\n\n`+
+            `주요 특징을 한 문장(50자 이내)으로 요약하세요.`
         ),
     ]);
 
-    // 요약 bullets + core
-    const parts = summaryRaw.split('---CORE---');
-    const bullets = (parts[0] || '').trim().split('\n').filter(Boolean);
-    const core    = (parts[1] || summaryRaw).trim();
-
-    const bulletEl = document.getElementById('summary-bullets');
-    bulletEl.innerHTML = bullets.map(b => `<li>${b}</li>`).join('');
-    document.getElementById('summary-core').textContent = core;
-
-    document.getElementById('payment-insight').textContent  = '📌 ' + paymentInsight;
-    document.getElementById('playtime-insight').textContent = '📌 ' + playtimeInsight;
+    const parts  = summaryRaw.split('---CORE---');
+    const bullets= (parts[0]||'').trim().split('\n').filter(Boolean);
+    const core   = (parts[1]||summaryRaw).trim();
+    document.getElementById('summary-bullets').innerHTML = bullets.map(b=>`<li>${b}</li>`).join('');
+    document.getElementById('summary-core').textContent  = core;
+    document.getElementById('payment-insight').textContent  = '📌 '+paymentInsight;
+    document.getElementById('playtime-insight').textContent = '📌 '+playtimeInsight;
 }
 
 // ── 메인 ──
@@ -418,42 +379,39 @@ async function main() {
     try {
         loadingText.textContent = '구글 시트에서 데이터를 불러오는 중...';
 
-        const [metaRows, paymentRows, distRows, playtimeRows] = await Promise.all([
+        const [metaRows, paymentRows, distRows, distAllRows, playtimeDistRows] = await Promise.all([
             fetchCSV(SHEET_URLS.meta),
             fetchCSV(SHEET_URLS.payment),
             fetchCSV(SHEET_URLS.dist),
-            fetchCSV(SHEET_URLS.playtime),
+            fetchCSV(SHEET_URLS.dist_all),
+            fetchCSV(SHEET_URLS.playtime_dist),
         ]);
 
-        const meta        = csvToMeta(metaRows);
-        const paymentData = csvToObjects(paymentRows);
-        const distData    = csvToObjects(distRows);
-        const playtimeData= csvToObjects(playtimeRows);
+        const meta            = csvToMeta(metaRows);
+        const paymentData     = csvToObjects(paymentRows);
+        const distData        = csvToObjects(distRows);
+        const distAllData     = csvToObjects(distAllRows);
+        const playtimeDistData= csvToObjects(playtimeDistRows);
 
-        // 헤더
         document.getElementById('hdr-circuit').textContent = meta.circuit_name || '2026 서든어택 챔피언십 시즌1';
         document.getElementById('hdr-title').textContent   = meta.report_title || '예선 설문 참가자 분석';
         document.getElementById('hdr-author').textContent  = meta.author || '';
         document.getElementById('hdr-date').textContent    = meta.report_date || '';
         document.getElementById('summary-special').textContent = meta.special_notes || '없음';
-        document.title = (meta.report_title || '예선 설문 참가자 분석');
+        document.title = meta.report_title || '예선 설문 참가자 분석';
 
-        // 렌더링
-        renderPaymentCards(paymentData, meta);
-        renderDist(distData);
-        renderPlaytimeTable(playtimeData);
+        renderPaymentCards(paymentData);
+        renderDistBars('dist-rows-survey', distData,    'TIER', 'COUNT', distColors);
+        renderDistBars('dist-rows-all',    distAllData, 'TIER', 'COUNT', distColors);
+        renderPlaytimeSummary(playtimeDistData);
 
         overlay.classList.add('hidden');
-
-        // LLM 비동기
-        fillLLMTexts(paymentData, distData, playtimeData, meta);
+        fillLLMTexts(paymentData, distData, playtimeDistData);
 
     } catch (err) {
         overlay.classList.add('hidden');
         errorBanner.classList.add('show');
-        errorBanner.innerHTML = `
-            <strong>⚠️ 데이터 로드 실패</strong><br>${err.message}<br><br>
-            <small>구글 시트 공개 설정 및 SHEET_ID / gid를 확인해주세요.</small>`;
+        errorBanner.innerHTML = `<strong>⚠️ 데이터 로드 실패</strong><br>${err.message}<br><br><small>구글 시트 공개 설정 및 SHEET_ID / gid를 확인해주세요.</small>`;
         console.error(err);
     }
 }
